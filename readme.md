@@ -112,7 +112,7 @@ The scripts are designed to be run in a specific order to form a complete data p
 
 The analysis scripts will generate bar charts visualizing the distribution of sentiments, similar to this:
 
-[!VADER Sentiment Distribution](vader_sentiment_distribution.png)
-[!Transformer Sentiment Distribution](transformer_sentiment_distribution.png)
+[VADER Sentiment Distribution](vader_sentiment_distribution.png)
+[Transformer Sentiment Distribution](transformer_sentiment_distribution.png)
 
 *(Note: You will need to run the scripts to generate your own images. These are placeholders.)*
