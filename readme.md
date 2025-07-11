@@ -1,19 +1,20 @@
 # Singapore Cost of Living Sentiment Analysis
 
-This project is an end-to-end data pipeline that scrapes Reddit comments related to the cost of living in Singapore, preprocesses the text data, and performs sentiment analysis using two distinct natural language processing (NLP) models: VADER (a lexicon-based model) and a pre-trained Transformer model from Hugging Face.
+This project is an end-to-end data pipeline that scrapes Reddit comments related to the cost of living in Singapore, preprocesses the text data, and performs both sentiment analysis and topic modeling. The analysis uses two distinct models for sentiment—VADER (lexicon-based) and a pre-trained Transformer—and Latent Dirichlet Allocation (LDA) for topic modeling.
 
-The goal is to analyze and compare public sentiment on this key economic issue from different analytical perspectives.
+The goal is to analyze public sentiment on this key economic issue and identify the core topics of discussion, particularly within negative comments.
 
 ## 📊 Features
 
 - **Reddit Data Scraping**: Dynamically scrapes comments from specified subreddits based on search queries and keywords.
 - **Secure Credential Management**: Uses a `config.ini` file to manage Reddit API credentials securely, keeping them out of the source code.
 - **Robust Text Preprocessing**: A comprehensive cleaning pipeline normalizes text by lowercasing, removing noise (URLs, mentions), filtering stopwords, and performing lemmatization.
-- **Dual-Model Sentiment Analysis**:
-  - **VADER**: A fast, lexicon-based model that provides detailed positive, neutral, and negative scores.
-  - **Transformer**: A deep learning model (`finiteautomata/bertweet-base-sentiment-analysis`) for nuanced, context-aware sentiment classification.
+- **Multi-Faceted Analysis**:
+  - **VADER Sentiment Analysis**: A fast, lexicon-based model that provides detailed positive, neutral, and negative scores.
+  - **Transformer Sentiment Analysis**: A deep learning model (`finiteautomata/bertweet-base-sentiment-analysis`) for nuanced, context-aware sentiment classification.
+  - **Topic Modeling**: Identifies key themes and topics discussed within the negative comments using Latent Dirichlet Allocation (LDA).
 - **Batch Processing**: The Transformer model analysis is performed in batches to handle large datasets efficiently and manage memory, especially on GPU.
-- **Data & Visualization Output**: Each analysis script saves its results to a CSV file and generates a bar chart to visualize the sentiment distribution.
+- **Data & Visualization Output**: Each analysis script saves its results to a CSV file and generates visualizations (bar charts, pie charts) of the results.
 
 ## 📂 Project Structure
 
@@ -25,6 +26,7 @@ costoflivingsentiments_sg/
 ├── preprocessing.py
 ├── detailed_vader_analysis.py
 ├── sentiment_analysis_transformer.py
+├── topic_modelling.py
 ├── requirements.txt
 └── README.md
 ```
@@ -108,11 +110,20 @@ The scripts are designed to be run in a specific order to form a complete data p
     ```
     *Outputs: `transformer_sentiment_results.csv`, `transformer_sentiment_distribution.png`*
 
+ 4.  **Run Topic Modeling:**
+    See what topics are discussed in the negative comments.
+    ```bash
+    python topic_modelling.py
+    ```
+    *Outputs: `negative_topics_distribution.png`*
+
+
 ## 📈 Example Output
 
 The analysis scripts will generate bar charts visualizing the distribution of sentiments, similar to this:
 
-!VADER Sentiment Distribution
-!Transformer Sentiment Distribution
+[VADER Sentiment Distribution](vader_sentiment_distribution.png)
+[Transformer Sentiment Distribution](transformer_sentiment_distribution.png)
+[Negative Topics Distribution](negative_topics_distribution.png)]
 
 *(Note: You will need to run the scripts to generate your own images. These are placeholders.)*
