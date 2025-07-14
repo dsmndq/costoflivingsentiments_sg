@@ -4,6 +4,8 @@ This project is an end-to-end data pipeline that scrapes Reddit comments related
 
 The goal is to analyze public sentiment on this key economic issue and identify the core topics of discussion, particularly within negative comments.
 
+# Read about this project in [this blog post](https://medium.com/@desmond_57481/decoding-the-discourse-an-nlp-deep-dive-into-the-singapores-cost-of-living-conversation-a4a6010b426b)
+
 ## 📊 Features
 
 - **Reddit Data Scraping**: Dynamically scrapes comments from specified subreddits based on search queries and keywords.
