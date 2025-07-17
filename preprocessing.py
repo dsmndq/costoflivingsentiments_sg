@@ -34,10 +34,13 @@ LEMMATIZER = WordNetLemmatizer()
 
 # Combine standard English stopwords with a custom list for the specific domain.
 STOP_WORDS = set(stopwords.words('english'))
-CUSTOM_STOPWORDS = {
+CUSTOM_STOPWORDS = { # Define custom stopwords separately
     'singapore', 'sg', 'like', 'get', 'one', 'also', 'would', 'really', 'im', 'u'
 }
 STOP_WORDS.update(CUSTOM_STOPWORDS)
+
+# Download NLTK resources on import
+download_nltk_resources()
 # ---
 
 def preprocess_social_media_text(text: str) -> str:
