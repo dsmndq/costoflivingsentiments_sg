@@ -1,5 +1,4 @@
 import re
-import os
 import nltk
 import pandas as pd
 from nltk.corpus import stopwords
@@ -17,15 +16,7 @@ def download_nltk_resources():
         'corpora/stopwords': 'stopwords',
         'corpora/wordnet': 'wordnet'
     }
-
-    # Set the NLTK data path to a directory within the app
-    nltk_data_dir = os.path.join(os.getcwd(), "nltk_data")
-    nltk.data.path.append(nltk_data_dir)
-    os.makedirs(nltk_data_dir, exist_ok=True)
-    print(f"[*] NLTK data directory set to: {nltk_data_dir}")
-
     print("--- Checking for NLTK resources ---")
-
     for path, package_id in required_packages.items():
         try:
             nltk.data.find(path)
@@ -35,6 +26,7 @@ def download_nltk_resources():
             nltk.download(package_id)
             print(f"[*] Download of '{package_id}' complete.")
     print("--- NLTK resource check complete ---\n")
+
 
 # --- Pre-initialized objects for performance ---
 # Create these objects once to avoid re-creating them on every function call,
