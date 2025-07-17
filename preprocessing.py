@@ -1,4 +1,5 @@
 import re
+import os
 import nltk
 import pandas as pd
 from nltk.corpus import stopwords
@@ -24,6 +25,7 @@ def download_nltk_resources():
         except LookupError:
             print(f"[*] Downloading missing resource: '{package_id}'...")
             nltk.download(package_id)
+            
             print(f"[*] Download of '{package_id}' complete.")
     print("--- NLTK resource check complete ---\n")
 

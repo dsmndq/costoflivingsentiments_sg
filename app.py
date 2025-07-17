@@ -46,6 +46,9 @@ def standardize_label(label: str) -> str:
 @st.cache_resource
 def setup_nltk():
     """Ensures NLTK resources are downloaded once per app session."""
+    nltk_data_dir = os.path.join(os.getcwd(), "nltk_data")
+    if not os.path.exists(nltk_data_dir):
+        os.makedirs(nltk_data_dir)
     download_nltk_resources()
 
 # --- 2. Streamlit User Interface ---
