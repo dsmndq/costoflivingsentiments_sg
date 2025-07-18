@@ -3,6 +3,8 @@
 
 ## 🎈 [**View the Live Demo Here**](https://costoflivingsentimentssg.streamlit.app/)
 
+<img width="1139" height="814" alt="Screenshot 2025-07-18 112759" src="https://github.com/user-attachments/assets/5495c32d-7fa2-4657-b331-84835252e874" />
+
 This project is an end-to-end data pipeline that scrapes Reddit comments related to the cost of living in Singapore, preprocesses the text data, and performs both sentiment analysis and topic modeling. The analysis uses two distinct models for sentiment—VADER (lexicon-based) and a pre-trained Transformer—and Latent Dirichlet Allocation (LDA) for topic modeling.
 
 The project now includes an interactive web application built with Streamlit that allows users to perform sentiment analysis in real-time.
