@@ -1,53 +1,55 @@
+
 # Singapore Cost of Living Sentiment Analysis
+
+## 🎈 [**View the Live Demo Here**](https://costoflivingsentimentssg.streamlit.app/)
 
 This project is an end-to-end data pipeline that scrapes Reddit comments related to the cost of living in Singapore, preprocesses the text data, and performs both sentiment analysis and topic modeling. The analysis uses two distinct models for sentiment—VADER (lexicon-based) and a pre-trained Transformer—and Latent Dirichlet Allocation (LDA) for topic modeling.
 
-The goal is to analyze public sentiment on this key economic issue and identify the core topics of discussion, particularly within negative comments.
+The project now includes an interactive web application built with Streamlit that allows users to perform sentiment analysis in real-time.
 
 # Read about this project in [this blog post](https://medium.com/@desmond_57481/decoding-the-discourse-an-nlp-deep-dive-into-the-singapores-cost-of-living-conversation-a4a6010b426b)
-# Try out the app demo [here](https://costoflivingsentimentssg.streamlit.app/)
-
 
 ## 📊 Features
 
-- **Reddit Data Scraping**: Dynamically scrapes comments from specified subreddits based on search queries and keywords.
-- **Secure Credential Management**: Uses a `config.ini` file to manage Reddit API credentials securely, keeping them out of the source code.
-- **Robust Text Preprocessing**: A comprehensive cleaning pipeline normalizes text by lowercasing, removing noise (URLs, mentions), filtering stopwords, and performing lemmatization.
-- **Multi-Faceted Analysis**:
-  - **VADER Sentiment Analysis**: A fast, lexicon-based model that provides detailed positive, neutral, and negative scores.
-  - **Transformer Sentiment Analysis**: A deep learning model (`finiteautomata/bertweet-base-sentiment-analysis`) for nuanced, context-aware sentiment classification.
-  - **Topic Modeling**: Identifies key themes and topics discussed within the negative comments using Latent Dirichlet Allocation (LDA).
-- **Batch Processing**: The Transformer model analysis is performed in batches to handle large datasets efficiently and manage memory, especially on GPU.
-- **Data & Visualization Output**: Each analysis script saves its results to a CSV file and generates visualizations (bar charts, pie charts) of the results.
+-   **Reddit Data Scraping**: Dynamically scrapes comments from specified subreddits based on search queries and keywords.
+-   **Secure Credential Management**: Uses a `config.ini` file to manage Reddit API credentials securely.
+-   **Robust Text Preprocessing**: A comprehensive cleaning pipeline normalizes text by lowercasing, removing noise (URLs, mentions), filtering stopwords, and performing lemmatization.
+-   **Interactive Web Application**: A user-friendly interface built with Streamlit to run sentiment analysis models directly in the browser.
+-   **Multi-Faceted Analysis**:
+    -   **VADER Sentiment Analysis**: A fast, lexicon-based model that provides detailed positive, neutral, and negative scores.
+    -   **Transformer Sentiment Analysis**: A deep learning model (`finiteautomata/bertweet-base-sentiment-analysis`) for nuanced, context-aware sentiment classification.
+    -   **Topic Modeling**: Identifies key themes within negative comments using Latent Dirichlet Allocation (LDA).
+-   **Data & Visualization Output**: Each analysis script saves its results to a CSV file and generates visualizations.
 
 ## 📂 Project Structure
 
-```
 costoflivingsentiments_sg/
 ├── .gitignore
 ├── config.ini
 ├── scraping.py
 ├── preprocessing.py
-├── detailed_vader_analysis.py
-├── sentiment_analysis_transformer.py
-├── topic_modelling.py
+├── detailed\_vader\_analysis.py
+├── sentiment\_analysis\_transformer.py
+├── topic\_modelling.py
+├── app.py
 ├── requirements.txt
 └── README.md
-```
 
-- **`scraping.py`**: Connects to the Reddit API using credentials from `config.ini`, searches for relevant posts, and scrapes the comments.
-- **`preprocessing.py`**: Cleans the raw text data from the scraped comments and prepares it for analysis.
-- **`detailed_vader_analysis.py`**: Loads the processed corpus, performs sentiment analysis using VADER, and outputs results, top comments, and a bar chart.
-- **`sentiment_analysis_transformer.py`**: Loads the processed corpus, performs sentiment analysis using a Hugging Face Transformer model, and outputs results and a bar chart.
-- **`config.ini`**: Configuration file for storing Reddit API credentials. **(Not tracked by Git)**.
-- **`requirements.txt`**: A list of all the Python libraries required to run the project.
-- **`.gitignore`**: Specifies which files and directories to ignore in version control (e.g., credentials, data files, virtual environments).
+-   **`scraping.py`**: Connects to the Reddit API and scrapes comments.
+-   **`preprocessing.py`**: Cleans the raw text data from the scraped comments.
+-   **`detailed_vader_analysis.py`**: Performs sentiment analysis using VADER.
+-   **`sentiment_analysis_transformer.py`**: Performs sentiment analysis using a Hugging Face Transformer model.
+-   **`topic_modelling.py`**: Identifies topics in negative comments using LDA.
+-   **`app.py`**: A self-contained script to launch an interactive Streamlit web application for real-time sentiment analysis.
+-   **`config.ini`**: Configuration file for storing Reddit API credentials.
+-   **`requirements.txt`**: A list of all Python libraries required to run the project.
+-   **`.gitignore`**: Specifies which files to ignore in version control.
 
 ## 🚀 Setup and Installation
 
 1.  **Clone the repository:**
     ```bash
-    git clone <your-repository-url>
+    git clone [https://github.com/dsmndq/costoflivingsentiments_sg.git](https://github.com/dsmndq/costoflivingsentiments_sg.git)
     cd costoflivingsentiments_sg
     ```
 
@@ -58,7 +60,7 @@ costoflivingsentiments_sg/
     ```
 
 3.  **Install dependencies:**
-    Create a `requirements.txt` file with the content below, then run the installation command.
+    Create a `requirements.txt` file with the content below, then run the installation command. Note that `streamlit` has been added for the web app.
     ```
     # requirements.txt
     pandas
@@ -69,65 +71,59 @@ costoflivingsentiments_sg/
     matplotlib
     tqdm
     configparser
+    scikit-learn
+    streamlit
     ```
     ```bash
     pip install -r requirements.txt
     ```
 
 4.  **Download NLTK Resources:**
-    The preprocessing and VADER scripts will automatically download the necessary NLTK packages (`punkt`, `stopwords`, `wordnet`, `vader_lexicon`) on their first run.
+    The scripts will automatically download the necessary NLTK packages on their first run.
 
-5.  **Configure API Credentials:**
-    - Rename the `config.ini.example` to `config.ini` (or create it).
-    - Open `config.ini` and replace the placeholder values with your actual Reddit API `client_id` and `client_secret`.
+5.  **Configure API Credentials (for local pipeline):**
+    -   Create a `config.ini` file.
+    -   Add your Reddit API `client_id` and `client_secret` to `config.ini`.
 
-## ⚙️ Usage Workflow
+## ⚙️ Usage Workflow (Local Data Pipeline)
 
-The scripts are designed to be run in a specific order to form a complete data pipeline.
+The original scripts are designed to be run in a specific order to form a complete data pipeline.
 
 1.  **Scrape the Data:**
-    Run the scraping script to collect comments from Reddit. You can adjust the subreddits, search query, and post limit inside the script.
     ```bash
     python scraping.py
     ```
     *Output: `scraped_relevant_comments_praw.csv`*
 
 2.  **Preprocess the Data:**
-    Clean the raw text to prepare it for analysis.
     ```bash
     python preprocessing.py
     ```
     *Output: `processed_corpus.csv`*
 
-3.  **Run Sentiment Analysis:**
-    You can run either or both of the analysis scripts. They both use `processed_corpus.csv` as input.
-
-    **VADER Analysis:**
+3.  **Run Sentiment Analysis (VADER or Transformer):**
     ```bash
     python detailed_vader_analysis.py
-    ```
-    *Outputs: `vader_sentiment_results.csv`, `vader_sentiment_distribution.png`*
-
-    **Transformer Analysis:**
-    ```bash
+    # OR
     python sentiment_analysis_transformer.py
     ```
-    *Outputs: `transformer_sentiment_results.csv`, `transformer_sentiment_distribution.png`*
 
- 4.  **Run Topic Modeling:**
-    See what topics are discussed in the negative comments.
+4.  **Run Topic Modeling:**
     ```bash
     python topic_modelling.py
     ```
-    *Outputs: `negative_topics_distribution.png`*
 
+## 🌐 Interactive App Deployment (Streamlit)
 
-## 📈 Example Output
+This project includes an interactive web application (`app.py`) that allows you to analyze text directly in your browser.
 
-The analysis scripts will generate bar charts visualizing the distribution of sentiments, similar to this:
+**The application is deployed and live here: [https://costoflivingsentimentssg.streamlit.app/](https://costoflivingsentimentssg.streamlit.app/)**
 
-[VADER Sentiment Distribution](vader_sentiment_distribution.png)
-[Transformer Sentiment Distribution](transformer_sentiment_distribution.png)
-[Negative Topics Distribution](negative_topics_distribution.png)]
+### Running the App Locally
 
-*(Note: You will need to run the scripts to generate your own images. These are placeholders.)*
+1.  **Ensure Dependencies are Installed**: Make sure you have installed all packages from the updated `requirements.txt`, especially `streamlit`.
+2.  **Run the App**: Execute the following command in your terminal from the project's root directory.
+    ```bash
+    streamlit run app.py
+    ```
+    Your browser should open with the application running locally.
