@@ -23,6 +23,7 @@ The project now includes an interactive web application built with Streamlit tha
 
 ## 📂 Project Structure
 
+```
 costoflivingsentiments_sg/
 ├── .gitignore
 ├── config.ini
@@ -34,6 +35,7 @@ costoflivingsentiments_sg/
 ├── app.py
 ├── requirements.txt
 └── README.md
+```
 
 -   **`scraping.py`**: Connects to the Reddit API and scrapes comments.
 -   **`preprocessing.py`**: Cleans the raw text data from the scraped comments.
