@@ -1,108 +1,168 @@
 import streamlit as st
-import torch
+import re
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from transformers import pipeline
+import torch
+import pandas as pd
 
-# Import the preprocessing function from your project
-from preprocessing import preprocess_social_media_text, download_nltk_resources
+# --- Page Configuration ---
+st.set_page_config(
+    page_title="Singapore Cost of Living Sentiment Analysis",
+    page_icon="🇸🇬",
+    layout="wide"
+)
 
-# --- 1. Model and Preprocessing Setup ---
 
-# Use st.cache_resource to load the model only once and cache it for future runs.
-# This significantly speeds up the app after the first load.
+# --- NLTK Resource Management ---
+
+# Use a flag to ensure NLTK resources are downloaded only once.
 @st.cache_resource
-def load_sentiment_pipeline():
-    """
-    Loads the Hugging Face sentiment analysis pipeline.
-    The decorator ensures this function is run only once.
-    """
-    # Create a placeholder to show the user that the model is loading
-    with st.spinner("Loading sentiment analysis model... This may take a moment."):
-        # Use the same model as in your analysis script for consistency
-        model_name = "finiteautomata/bertweet-base-sentiment-analysis"
+def ensure_nltk_resources():
+    """Downloads necessary NLTK resources if they are not already present."""
+    resources = {
+        'tokenizers/punkt': 'punkt',
+        'corpora/stopwords': 'stopwords',
+        'corpora/wordnet': 'wordnet',
+        'sentiment/vader_lexicon': 'vader_lexicon'
+    }
+    for path, package_id in resources.items():
+        try:
+            nltk.data.find(path)
+        except LookupError:
+            nltk.download(package_id)
 
-        # Set device to GPU (0) if available, otherwise CPU (-1)
-        device = 0 if torch.cuda.is_available() else -1
+# Call the function to ensure resources are available
+ensure_nltk_resources()
 
-        sentiment_pipeline = pipeline(
-            "sentiment-analysis",
-            model=model_name,
-            device=device
-        )
-    return sentiment_pipeline
 
-def standardize_label(label: str) -> str:
+# --- Text Preprocessing Function (from your preprocessing.py) ---
+
+# Pre-initialize lemmatizer and stop words for efficiency
+LEMMATIZER = WordNetLemmatizer()
+STOP_WORDS = set(stopwords.words('english'))
+# Add custom stopwords relevant to the project's context
+CUSTOM_STOPWORDS = {'singapore', 'sg', 'like', 'get', 'one', 'also', 'would', 'really', 'im', 'u'}
+STOP_WORDS.update(CUSTOM_STOPWORDS)
+
+def preprocess_social_media_text(text: str) -> str:
     """
-    Standardizes the model's output label ('POS', 'NEG', 'NEU') to a
-    user-friendly format ('Positive', 'Negative', 'Neutral').
+    Cleans and preprocesses raw text from social media for NLP tasks.
+    The pipeline includes lowercasing, noise removal, tokenization,
+    stopword removal, and lemmatization.
     """
-    if label == 'POS':
-        return 'Positive'
-    elif label == 'NEG':
-        return 'Negative'
-    elif label == 'NEU': # The model uses 'NEU' for Neutral
-        return 'Neutral'
-    return 'Unknown' # Fallback for any unexpected labels
+    if not isinstance(text, str):
+        return ""
+
+    text = text.lower() # Lowercasing
+    text = re.sub(r'https://\S+|http\S+|www\S+', '', text) # Remove URLs
+    text = re.sub(r'u/\w+|r/\w+', '', text) # Remove Reddit mentions
+    text = re.sub(r'[^a-z\s]', '', text) # Remove non-alphabetic characters
+    text = re.sub(r'\s+', ' ', text).strip() # Normalize whitespace
+    tokens = text.split()
+    # Remove stopwords and lemmatize
+    filtered_tokens = [word for word in tokens if word not in STOP_WORDS]
+    lemmatized_tokens = [LEMMATIZER.lemmatize(word) for word in filtered_tokens]
+
+    return ' '.join(lemmatized_tokens)
+
+
+# --- Model Loading with Caching ---
 
 @st.cache_resource
-def setup_nltk():
-    """Ensures NLTK resources are downloaded once per app session."""
-    nltk_data_dir = os.path.join(os.getcwd(), "nltk_data")
-    if not os.path.exists(nltk_data_dir):
-        os.makedirs(nltk_data_dir)
-    download_nltk_resources()
+def load_vader_model():
+    """Loads the VADER sentiment intensity analyzer."""
+    return SentimentIntensityAnalyzer()
 
-# --- 2. Streamlit User Interface ---
+@st.cache_resource
+def load_transformer_model():
+    """
+    Loads the pre-trained Transformer model for sentiment analysis.
+    This model is specified in the project's readme.
+    """
+    model_name = "finiteautomata/bertweet-base-sentiment-analysis"
+    # The device=-1 argument ensures the model runs on CPU, which is suitable for Streamlit Cloud's free tier.
+    return pipeline("sentiment-analysis", model=model_name, tokenizer=model_name, device=-1)
 
-def main():
-    # Set up the Streamlit page configuration
-    st.set_page_config(
-        page_title="SG Cost of Living Sentiment",
-        page_icon="🇸🇬",
-        layout="centered"
+# --- Main Application UI ---
+
+st.title("🗣️ Singapore Cost of Living Sentiment Analysis")
+st.markdown("""
+This app analyzes the sentiment of text about the cost of living in Singapore.
+Enter some text below and choose a model to see the sentiment result.
+""")
+
+# --- User Input and Model Selection ---
+col1, col2 = st.columns(2)
+
+with col1:
+    st.subheader("📝 Your Text")
+    user_input = st.text_area("Enter the text you want to analyze:", "The cost of living is getting very high, but the food is still amazing.", height=150)
+
+    model_choice = st.selectbox(
+        "🧠 Choose the Analysis Model:",
+        ("Transformer (bertweet-base)", "VADER (Lexicon-based)")
     )
 
-    st.title("🇸🇬 Singapore Cost of Living Sentiment Analysis")
-    st.markdown("""
-    Enter a comment about the cost of living in Singapore, and this app
-    will predict the sentiment (Positive, Negative, or Neutral) using a
-    fine-tuned `BERTweet` model.
-    """)
+analyze_button = st.button("Analyze Sentiment", type="primary")
 
-    # Ensure NLTK resources are available (cached for efficiency)
-    setup_nltk()
 
-    # Load the cached model
-    sentiment_pipeline = load_sentiment_pipeline()
+# --- Analysis and Results Display ---
+with col2:
+    st.subheader("📊 Analysis Results")
 
-    # --- User Input Area ---
-    user_input = st.text_area(
-        "Enter text for analysis:",
-        "The rent is too high, but the food is amazing and affordable.",
-        height=150
-    )
-
-    # --- Analysis Trigger ---
-    if st.button("Analyze Sentiment"):
-        if user_input and user_input.strip() != "":
+    if analyze_button:
+        if user_input:
             with st.spinner("Analyzing..."):
-                # 1. Preprocess the text using your existing function
+                # Step 1: Preprocess the text
                 cleaned_text = preprocess_social_media_text(user_input)
+                st.write("**Preprocessed Text:**")
+                st.info(f"'{cleaned_text}'")
 
-                # 2. Get prediction from the model (pipeline expects a list)
-                result = sentiment_pipeline([cleaned_text])[0]
-                sentiment = standardize_label(result['label'])
-                score = result['score']
+                # Step 2: Run the selected model
+                if model_choice == "VADER (Lexicon-based)":
+                    vader_model = load_vader_model()
+                    vader_scores = vader_model.polarity_scores(cleaned_text)
 
-                # 3. Display the results in a user-friendly way
-                st.subheader("Analysis Result")
-                if sentiment == 'Positive':
-                    st.success(f"**Sentiment: {sentiment}** (Confidence: {score:.2%})")
-                elif sentiment == 'Negative':
-                    st.error(f"**Sentiment: {sentiment}** (Confidence: {score:.2%})")
-                else:
-                    st.warning(f"**Sentiment: {sentiment}** (Confidence: {score:.2%})")
+                    # Determine final sentiment
+                    if vader_scores['compound'] >= 0.05:
+                        final_sentiment = "Positive"
+                        st.success("Sentiment: Positive ✅")
+                    elif vader_scores['compound'] <= -0.05:
+                        final_sentiment = "Negative"
+                        st.error("Sentiment: Negative ❌")
+                    else:
+                        final_sentiment = "Neutral"
+                        st.warning("Sentiment: Neutral ➖")
+
+                    # Display VADER scores
+                    st.write("**VADER Score Breakdown:**")
+                    scores_df = pd.DataFrame([vader_scores]).T
+                    scores_df.columns = ['Score']
+                    st.dataframe(scores_df, use_container_width=True)
+
+
+                elif model_choice == "Transformer (bertweet-base)":
+                    transformer_model = load_transformer_model()
+                    transformer_result = transformer_model(cleaned_text)
+                    label = transformer_result[0]['label']
+                    score = transformer_result[0]['score']
+
+                    # Display Transformer result
+                    if label == 'POS':
+                        st.success(f"Sentiment: Positive ✅ (Score: {score:.2f})")
+                    elif label == 'NEG':
+                        st.error(f"Sentiment: Negative ❌ (Score: {score:.2f})")
+                    else:
+                        st.warning(f"Sentiment: Neutral ➖ (Score: {score:.2f})")
+
+                    st.write("**Model Output:**")
+                    st.json(transformer_result)
+
         else:
             st.warning("Please enter some text to analyze.")
 
-if __name__ == '__main__':
-    main()
+st.markdown("---")
+st.write("Project by Desmond Quek. Read more about it on [Medium](https://medium.com/@desmond_57481/decoding-the-discourse-an-nlp-deep-dive-into-the-singapores-cost-of-living-conversation-a4a6010b426b).")

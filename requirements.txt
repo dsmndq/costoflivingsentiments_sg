@@ -1,9 +1,6 @@
-streamlit
 pandas
-praw
 nltk
-tqdm
 torch
 transformers
+streamlit
 scikit-learn
-matplotlib
